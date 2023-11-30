@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "operator.fullname" . }}-manager
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      targetPort: {{ .Values.manager.services.metrics.port }}
+      protocol: TCP
+      port: {{ .Values.manager.services.metrics.port }}
+  selector:
+    {{- include "operator.selectorLabels" . | nindent 4 }}
+
+{{- if eq (include "operator.webhook.enabled" .) "true" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "operator.fullname" . }}-webhook
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: management
+      targetPort: {{ .Values.webhook.services.management.port }}
+      protocol: TCP
+      port: {{ .Values.webhook.services.management.port }}
+    - name: master
+      targetPort: {{ .Values.webhook.services.master.port }}
+      protocol: TCP
+      port: {{ .Values.webhook.services.master.port }}
+  selector:
+    {{- include "operator.selectorLabels" . | nindent 4 }}
+{{- end -}}

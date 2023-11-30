@@ -1,0 +1,16 @@
+{{- if eq (include "operator.webhook.enabled" .) "true" }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "operator.fullname" . }}
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "operator.fullname" . }}-webhook-tls
+  dnsNames:
+    - {{ include "operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc
+    - {{ include "operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    name: {{ include "operator.fullname" . }}-selfsigned
+    kind: Issuer
+{{- end -}}

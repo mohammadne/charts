@@ -1,0 +1,52 @@
+{{- if .Values.webhook.mutation.enabled }}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "operator.fullname" . }}
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "operator.fullname" . }}
+webhooks:
+  - name: {{ include "operator.fullname" . }}.kb.io
+    admissionReviewVersions: ["v1"]
+    failurePolicy: Fail
+    sideEffects: None
+    clientConfig:
+      service:
+        name: {{ include "operator.fullname" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: {{ .Values.webhook.mutation.path }}
+    {{- with .Values.webhook.mutation.rules }}
+    rules:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end }}
+
+{{- if .Values.webhook.validation.enabled }}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "operator.fullname" . }}
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "operator.fullname" . }}
+webhooks:
+  # TODO: check empty name
+  - name: {{ include "operator.fullname" . }}.kb.io
+    admissionReviewVersions: ["v1"]
+    failurePolicy: Fail
+    sideEffects: None
+    clientConfig:
+      service:
+        name: {{ include "operator.fullname" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: {{ .Values.webhook.validation.path }}
+    {{- with .Values.webhook.validation.rules }}
+    rules:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end }}

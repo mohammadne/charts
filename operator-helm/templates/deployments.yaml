@@ -1,0 +1,140 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "operator.fullname" . }}-manager
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+spec:
+  replicas: 1 # don't change it
+  selector:
+    matchLabels:
+      {{- include "operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.image.pullSecrets.enabled }}
+      imagePullSecrets:
+        - name: {{ include "operator.fullname" . }}-imagepullsecret
+      {{- end }}
+      serviceAccountName: {{ include "operator.fullname" . }}-manager
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: manager
+          securityContext: {{- toYaml .Values.manager.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: RUNNING_INSIDE_POD
+              value: "true"
+          args: {{ .Values.manager.args | toYaml | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.manager.services.metrics.port }}
+              protocol: TCP
+          livenessProbe: {{- toYaml .Values.manager.probe.liveness | nindent 12 }}
+          readinessProbe: {{- toYaml .Values.manager.probe.readiness | nindent 12 }}
+          resources: {{- toYaml .Values.manager.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.config.enabled }}
+            - name: config
+              mountPath: "{{ .Values.config.mountPath }}"
+              readOnly: true
+            {{- end }}
+      volumes:
+        {{- if .Values.config.enabled }}
+        - name: config
+          configMap:
+            name: {{ include "operator.fullname" . }}-config
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+{{- if eq (include "operator.webhook.enabled" .) "true" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "operator.fullname" . }}-webhook
+  labels:
+    {{- include "operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webhook.replicas }}
+  selector:
+    matchLabels:
+      {{- include "operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.image.pullSecrets.enabled }}
+      imagePullSecrets:
+        - name: {{ include "operator.fullname" . }}-imagepullsecret
+      {{- end }}
+      serviceAccountName: {{ include "operator.fullname" . }}-webhook
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: webhook
+          securityContext: {{- toYaml .Values.webhook.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: RUNNING_INSIDE_POD
+              value: "true"
+          args: {{ .Values.webhook.args | toYaml | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.webhook.services.management.port }}
+              protocol: TCP
+            - containerPort: {{ .Values.webhook.services.master.port }}
+              protocol: TCP
+          livenessProbe: {{- toYaml .Values.webhook.probe.liveness | nindent 12 }}
+          readinessProbe: {{- toYaml .Values.webhook.probe.readiness | nindent 12 }}
+          resources: {{- toYaml .Values.webhook.resources | nindent 12 }}
+          volumeMounts:
+            - name: webhook-tls
+              mountPath: {{ .Values.webhook.tls.directory }}
+              readOnly: true
+            {{- if .Values.config.enabled }}
+            - name: config
+              mountPath: "{{ .Values.config.mountPath }}"
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: webhook-tls
+          secret:
+            defaultMode: 420
+            secretName: {{ include "operator.fullname" . }}-webhook-tls
+        {{- if .Values.config.enabled }}
+        - name: config
+          configMap:
+            name: {{ include "operator.fullname" . }}-config
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,177 @@
+fullnameOverride: ""
+
+# specify your image detail here
+image:
+  registry: your-operator-registry-url
+  repository: your-operator-repository
+  pullPolicy: Always
+  tag: "v0.1.0"
+  # If enabled, you have to provide username and password, 
+  # please use a third party tool like helm-secrets and not push your
+  # raw credentials to the git repository
+  pullSecrets:
+    enabled: false
+    username: ""
+    password: ""
+
+# controller manager configuration settings
+manager:
+  # rules that your manager-container needs in runtime
+  rules:
+    - apiGroups: ["apps"]
+      resources: ["deployments"]
+      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  services:
+    metrics:
+      port: 8080
+
+  # arguments to be passed to the manager container
+  args:
+    - manager
+    - --metrics-bind-port=8080
+    - --health-probe-bind-port=8081
+    - --leader-elect
+
+  # how much resource to be used
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+  # security-context within the container
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    allowPrivilegeEscalation: false
+
+  # probe your container
+  probe:
+    liveness:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      httpGet:
+        path: /healthz
+        port: 8081
+    readiness:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      httpGet:
+        path: /readyz
+        port: 8081
+
+# define your webhook detail with appropriate rules
+webhook:
+  replicas: 1
+
+  services:
+    management: # the service probe and metrics listens on.
+      port: 8080
+    master: # the service the webhook itself listens on.
+      port: 443
+
+  mutation:
+    enabled: false
+    path: "/mutation"
+    rules:
+      - operations: ["CREATE", "UPDATE"]
+        apiGroups: ["your-resource-group-with-domian"]
+        apiVersions: ["your-resource-version"]
+        resources: ["plural-resource-name"]
+
+  validation:
+    enabled: true
+    path: "/validation"
+    rules:
+      - operations: ["CREATE", "UPDATE", "DELETE"]
+        apiGroups: ["your-resource-group-with-domian"]
+        apiVersions: ["your-resource-version"]
+        resources: ["plural-resource-name"]
+
+  # arguments to be passed to the webhook container
+  args:
+    - webhook
+    - --management-bind-port=8080
+    - --master-bind-port=443
+
+  tls:
+    directory: /tmp/k8s-webhook-server/serving-certs
+
+  # how much resource to be used
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+  # security-context within the container
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    allowPrivilegeEscalation: false
+
+  # probe your container
+  probe:
+    liveness:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      httpGet:
+        path: /healthz/liveness
+        port: 8080
+    readiness:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      httpGet:
+        path: /healthz/readiness
+        port: 8080
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+serviceAccount:
+  annotations: {}
+
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  selector: {}
+
+nodeSelector: {}
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+          - arm64
+          - ppc64le
+          - s390x
+        - key: kubernetes.io/os
+          operator: In
+          values:
+          - linux
+
+tolerations: []
+
+# If enabled, the values will be injected to the container
+# it can be used as a way to pass application config, also we have
+# set RUNNING_INSIDE_POD environemnt inside container as an identifier
+config:
+  enabled: true
+  mountPath: /tmp
+  values:
+    key: "value"
