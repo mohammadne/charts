@@ -33,7 +33,7 @@ spec:
           env:
             - name: RUNNING_INSIDE_POD
               value: "true"
-          args: {{ .Values.manager.args | toYaml | nindent 12 }}
+          args: {{ .Values.manager.arguments | toYaml | nindent 12 }}
           ports:
             - containerPort: {{ .Values.manager.services.metrics.port }}
               protocol: TCP
@@ -99,7 +99,7 @@ spec:
           env:
             - name: RUNNING_INSIDE_POD
               value: "true"
-          args: {{ .Values.webhook.args | toYaml | nindent 12 }}
+          args: {{ .Values.webhook.arguments | toYaml | nindent 12 }}
           ports:
             - containerPort: {{ .Values.webhook.services.management.port }}
               protocol: TCP

@@ -27,7 +27,7 @@ manager:
       port: 8080
 
   # arguments to be passed to the manager container
-  args:
+  arguments:
     - manager
     - --metrics-bind-port=8080
     - --health-probe-bind-port=8081
@@ -72,7 +72,7 @@ webhook:
     management: # the service probe and metrics listens on.
       port: 8080
     master: # the service the webhook itself listens on.
-      port: 443
+      port: 8443
 
   mutation:
     enabled: false
@@ -93,13 +93,13 @@ webhook:
         resources: ["plural-resource-name"]
 
   # arguments to be passed to the webhook container
-  args:
+  arguments:
     - webhook
     - --management-bind-port=8080
-    - --master-bind-port=443
+    - --master-bind-port=8443
 
   tls:
-    directory: /tmp/k8s-webhook-server/serving-certs
+    directory: /tmp/secrets
 
   # how much resource to be used
   resources:
@@ -172,6 +172,6 @@ tolerations: []
 # set RUNNING_INSIDE_POD environemnt inside container as an identifier
 config:
   enabled: true
-  mountPath: /tmp
+  mountPath: /tmp/operator
   values:
     key: "value"

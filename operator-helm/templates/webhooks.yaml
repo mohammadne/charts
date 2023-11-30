@@ -18,6 +18,7 @@ webhooks:
         name: {{ include "operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: {{ .Values.webhook.mutation.path }}
+        port: {{ .Values.webhook.services.master.port }}
     {{- with .Values.webhook.mutation.rules }}
     rules:
       {{- toYaml . | nindent 6 }}
@@ -35,7 +36,6 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "operator.fullname" . }}
 webhooks:
-  # TODO: check empty name
   - name: {{ include "operator.fullname" . }}.kb.io
     admissionReviewVersions: ["v1"]
     failurePolicy: Fail
@@ -45,6 +45,7 @@ webhooks:
         name: {{ include "operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: {{ .Values.webhook.validation.path }}
+        port: {{ .Values.webhook.services.master.port }}
     {{- with .Values.webhook.validation.rules }}
     rules:
       {{- toYaml . | nindent 6 }}
