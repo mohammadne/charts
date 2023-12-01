@@ -112,10 +112,13 @@ webhook:
 
   # security-context within the container
   securityContext:
-    capabilities:
-      drop:
-      - ALL
-    allowPrivilegeEscalation: false
+    {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
 
   # probe your container
   probe:
