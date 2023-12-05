@@ -72,7 +72,7 @@ webhook:
   rules:
     - apiGroups: ["apps"]
       resources: ["deployments"]
-      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      verbs: ["get", "list", "watch"]
 
   services:
     management: # the service probe and metrics listens on.
