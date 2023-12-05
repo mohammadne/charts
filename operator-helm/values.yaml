@@ -16,7 +16,7 @@ image:
 
 # controller manager configuration settings
 manager:
-  # rules that your manager-container needs in runtime
+  # rules that your manager service-account needs in runtime
   rules:
     - apiGroups: ["apps"]
       resources: ["deployments"]
@@ -67,6 +67,12 @@ manager:
 # define your webhook detail with appropriate rules
 webhook:
   replicas: 1
+
+  # rules that your webhook service-account needs in runtime
+  rules:
+    - apiGroups: ["apps"]
+      resources: ["deployments"]
+      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   services:
     management: # the service probe and metrics listens on.
