@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   operator-helm:
   - apiVersion: v2
+    created: "2023-12-05T03:41:53.619570096Z"
+    description: A Helm chart for Kubernetes
+    digest: 86302ab35b344b90daf434c86f10edc80af79e04d4859a506a79f4cfca947564
+    name: operator-helm
+    type: application
+    urls:
+    - https://mohammadne.github.io/charts/operator-helm-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2023-12-01T15:21:31.204334146Z"
     description: A Helm chart for Kubernetes
     digest: f525a67b448ca7fb1f0943739a5b78f1698ddce9d75460b8c08546987dd2f023
@@ -19,4 +28,4 @@ entries:
     urls:
     - https://mohammadne.github.io/charts/operator-helm-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-01T15:21:31.203524504Z"
+generated: "2023-12-05T03:41:53.618489304Z"
