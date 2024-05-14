@@ -1,5 +1,15 @@
 apiVersion: v1
 entries:
+  operator:
+  - apiVersion: v2
+    created: "2024-05-14T04:27:03.852271641Z"
+    description: A Helm chart for managing Kubernetes controllers
+    digest: 7f3d46a01a533a220aebb2365e216d3487e0d5f12275b3da9ac8509f45e5c713
+    name: operator
+    type: application
+    urls:
+    - https://mohammadne.github.io/charts/operator-0.2.0.tgz
+    version: 0.2.0
   operator-helm:
   - apiVersion: v2
     created: "2023-12-05T05:21:11.238650678Z"
@@ -28,4 +38,4 @@ entries:
     urls:
     - https://mohammadne.github.io/charts/operator-helm-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-05T05:21:11.237823135Z"
+generated: "2024-05-14T04:27:03.851492086Z"
