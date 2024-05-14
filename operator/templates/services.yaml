@@ -2,16 +2,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "operator.fullname" . }}-manager
+  name: {{ include "operator.fullname" . }}-controller
   labels:
     {{- include "operator.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
     - name: metrics
-      targetPort: {{ .Values.manager.services.metrics.port }}
+      targetPort: {{ .Values.controller.ports.metrics }}
       protocol: TCP
-      port: {{ .Values.manager.services.metrics.port }}
+      port: {{ .Values.controller.ports.metrics }}
   selector:
     {{- include "operator.selectorLabels" . | nindent 4 }}
 
@@ -26,14 +26,14 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: management
-      targetPort: {{ .Values.webhook.services.management.port }}
+    - name: metrics
+      targetPort: {{ .Values.webhook.ports.metrics }}
       protocol: TCP
-      port: {{ .Values.webhook.services.management.port }}
-    - name: master
-      targetPort: {{ .Values.webhook.services.master.port }}
+      port: {{ .Values.webhook.ports.metrics }}
+    - name: server
+      targetPort: {{ .Values.webhook.ports.server }}
       protocol: TCP
-      port: {{ .Values.webhook.services.master.port }}
+      port: {{ .Values.webhook.ports.server }}
   selector:
     {{- include "operator.selectorLabels" . | nindent 4 }}
 {{- end -}}

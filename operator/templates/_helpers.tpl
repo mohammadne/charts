@@ -52,7 +52,7 @@ The imagePullSecret for private repositories
 Note that you have to pass your image detail in this template function.
 */}}
 {{- define "operator.imagePullSecret" }}
-{{- with .Values.manager.image }}
+{{- with .Values.controller.image }}
 {{- if .pullSecrets.enabled }}
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .registry .pullSecrets.username .pullSecrets.password (printf "%s:%s" .pullSecrets.username .pullSecrets.password | b64enc) | b64enc }}
 {{- end }}

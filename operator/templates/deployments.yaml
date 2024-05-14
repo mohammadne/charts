@@ -19,27 +19,39 @@ spec:
       labels:
         {{- include "operator.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.image.pullSecrets.enabled }}
+      {{- if .Values.image.secret.enabled }}
       imagePullSecrets:
-        - name: {{ include "operator.fullname" . }}-imagepullsecret
+        - name: {{ include "operator.fullname" . }}-imagesecret
       {{- end }}
-      serviceAccountName: {{ include "operator.fullname" . }}-manager
+      serviceAccountName: {{ include "operator.fullname" . }}-controller
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: manager
-          securityContext: {{- toYaml .Values.manager.securityContext | nindent 12 }}
+        - name: controller
+          securityContext: {{- toYaml .Values.controller.securityContext | nindent 12 }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: RUNNING_INSIDE_POD
               value: "true"
-          args: {{ .Values.manager.arguments | toYaml | nindent 12 }}
+          args: {{ .Values.controller.arguments | toYaml | nindent 12 }}
           ports:
-            - containerPort: {{ .Values.manager.services.metrics.port }}
+            - containerPort: {{ .Values.controller.ports.metrics }}
               protocol: TCP
-          livenessProbe: {{- toYaml .Values.manager.probe.liveness | nindent 12 }}
-          readinessProbe: {{- toYaml .Values.manager.probe.readiness | nindent 12 }}
-          resources: {{- toYaml .Values.manager.resources | nindent 12 }}
+            - containerPort: {{ .Values.controller.ports.probe }}
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            httpGet:
+              path: /healthz
+              port: {{ .Values.controller.ports.probe }}
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            httpGet:
+              path: /readyz
+              port: {{ .Values.controller.ports.probe }}
+          resources: {{- toYaml .Values.controller.resources | nindent 12 }}
           volumeMounts:
             {{- if .Values.config.enabled }}
             - name: config
@@ -85,7 +97,7 @@ spec:
       labels:
         {{- include "operator.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.image.pullSecrets.enabled }}
+      {{- if .Values.image.secret.enabled }}
       imagePullSecrets:
         - name: {{ include "operator.fullname" . }}-imagepullsecret
       {{- end }}
@@ -101,12 +113,24 @@ spec:
               value: "true"
           args: {{ .Values.webhook.arguments | toYaml | nindent 12 }}
           ports:
-            - containerPort: {{ .Values.webhook.services.management.port }}
+            - containerPort: {{ .Values.webhook.ports.metrics }}
               protocol: TCP
-            - containerPort: {{ .Values.webhook.services.master.port }}
+            - containerPort: {{ .Values.webhook.ports.probe }}
               protocol: TCP
-          livenessProbe: {{- toYaml .Values.webhook.probe.liveness | nindent 12 }}
-          readinessProbe: {{- toYaml .Values.webhook.probe.readiness | nindent 12 }}
+            - containerPort: {{ .Values.webhook.ports.server }}
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            httpGet:
+              path: /healthz
+              port: {{ .Values.webhook.ports.probe }}
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            httpGet:
+              path: /readyz
+              port: {{ .Values.webhook.ports.probe }}
           resources: {{- toYaml .Values.webhook.resources | nindent 12 }}
           volumeMounts:
             - name: webhook-tls

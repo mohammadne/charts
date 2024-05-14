@@ -7,7 +7,7 @@ metadata:
     {{- include "operator.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "operator.fullname" . }}-manager
+    name: {{ include "operator.fullname" . }}-conroller
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role

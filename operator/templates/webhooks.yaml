@@ -45,7 +45,7 @@ webhooks:
         name: {{ include "operator.fullname" . }}-webhook
         namespace: {{ .Release.Namespace }}
         path: {{ .Values.webhook.validation.path }}
-        port: {{ .Values.webhook.services.master.port }}
+        port: {{ .Values.webhook.ports.master }}
     {{- with .Values.webhook.validation.rules }}
     rules:
       {{- toYaml . | nindent 6 }}

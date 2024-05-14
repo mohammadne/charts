@@ -1,4 +1,4 @@
-# Operator Helm
+# Operator
 
 Helm chart for Go based operators to use instead of default kustomize
 

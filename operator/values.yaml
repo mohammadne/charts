@@ -6,29 +6,29 @@ image:
   repository: your-operator-repository
   pullPolicy: Always
   tag: "v0.1.0"
-  # If enabled, you have to provide username and password, 
+  # If enabled, you have to provide secret (username and password) for image pull-push operatoion, 
   # please use a third party tool like helm-secrets and not push your
   # raw credentials to the git repository
-  pullSecrets:
+  secret:
     enabled: false
     username: ""
     password: ""
 
-# controller manager configuration settings
-manager:
+# controller configuration settings
+controller:
   # rules that your manager service-account needs in runtime
   rules:
     - apiGroups: ["apps"]
       resources: ["deployments"]
       verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-  services:
-    metrics:
-      port: 8080
+  ports:
+    metrics: 8080
+    probe: 8081
 
   # arguments to be passed to the manager container
   arguments:
-    - manager
+    - controller
     - --metrics-bind-port=8080
     - --health-probe-bind-port=8081
     - --leader-elect
@@ -49,21 +49,6 @@ manager:
       - ALL
     allowPrivilegeEscalation: false
 
-  # probe your container
-  probe:
-    liveness:
-      initialDelaySeconds: 15
-      periodSeconds: 20
-      httpGet:
-        path: /healthz
-        port: 8081
-    readiness:
-      initialDelaySeconds: 5
-      periodSeconds: 10
-      httpGet:
-        path: /readyz
-        port: 8081
-
 # define your webhook detail with appropriate rules
 webhook:
   replicas: 1
@@ -74,11 +59,17 @@ webhook:
       resources: ["deployments"]
       verbs: ["get", "list", "watch"]
 
-  services:
-    management: # the service probe and metrics listens on.
-      port: 8080
-    master: # the service the webhook itself listens on.
-      port: 8443
+  ports:
+    metrics: 8080
+    probe: 8081
+    server: 8443
+
+  # arguments to be passed to the webhook container
+  arguments:
+    - webhook
+    - --metrics-bind-port=8080
+    - --health-probe-bind-port=8081
+    - --server-bind-port=8443
 
   mutation:
     enabled: false
@@ -97,12 +88,6 @@ webhook:
         apiGroups: ["your-resource-group-with-domian"]
         apiVersions: ["your-resource-version"]
         resources: ["plural-resource-name"]
-
-  # arguments to be passed to the webhook container
-  arguments:
-    - webhook
-    - --management-bind-port=8080
-    - --master-bind-port=8443
 
   tls:
     directory: /tmp/secrets
@@ -125,21 +110,6 @@ webhook:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
-
-  # probe your container
-  probe:
-    liveness:
-      initialDelaySeconds: 15
-      periodSeconds: 20
-      httpGet:
-        path: /healthz/liveness
-        port: 8080
-    readiness:
-      initialDelaySeconds: 5
-      periodSeconds: 10
-      httpGet:
-        path: /healthz/readiness
-        port: 8080
 
 podAnnotations: {}
 

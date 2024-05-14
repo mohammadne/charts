@@ -2,10 +2,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "operator.fullname" . }}-manager
+  name: {{ include "operator.fullname" . }}-controller
   labels:
     {{- include "operator.labels" . | nindent 4 }}
-{{- with .Values.manager.rules }}
+{{- with .Values.controller.rules }}
 rules:
   {{- toYaml . | nindent 2 }}
 {{- end }}
